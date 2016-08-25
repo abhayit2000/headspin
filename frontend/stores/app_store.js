@@ -59,6 +59,14 @@ function createSelection(queryTags) {
   selectionCounter++;
 }
 
+function updateSelections() {
+  let oldSelections = selections;
+  selections = [];
+  oldSelections.forEach(selection => {
+    createSelection(selection.queryTags);
+  });
+}
+
 function deleteSelection(id) {
   selections.forEach((selection, idx) => {
     if (selection.id === id){
@@ -83,10 +91,12 @@ AppStore.__onDispatch = function (payload) {
       break;
     case "DELETE_TAG":
       deleteTag(payload.tag, payload.download);
+      updateSelections();
       AppStore.__emitChange();
       break;
     case "CREATE_TAG":
       createTag(payload.tag, payload.download);
+      updateSelections();
       AppStore.__emitChange();
       break;
     case "CREATE_SELECTION":
