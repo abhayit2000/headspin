@@ -1,0 +1,128 @@
+Frontend Challenge
+
+Project: Create an interactive UI that allows tagging objects, and
+creating selections based on those tags.
+
+See demo.mov for a very crude UI demonstrating these concepts. The UI
+depicted in the video represents a bare minimum acceptable solution;
+all the components are there, but the layout is hard to understand,
+and the interactions are jerky and hard to follow. Please go above and
+beyond what you see in the demo video!
+
+If you get stuck, get in touch! We’re all humans here :-)
+
+
+Download Sessions
+-----------------
+
+We are working with "download sessions" -- testing data downloads on
+mobile networks all over the world.
+
+A download session has a size, a duration (time), and list of tags:
+
+{
+  size: 200,
+  time: 9,
+  tags: [...]
+}
+
+A tag is a `name=value` pair:
+
+{
+  name: 'city',
+  value: 'Jakarta'
+}
+
+We should be able to add tags to and remove tags from download
+sessions.
+
+
+Selections
+----------
+
+We are interested in setting up "Selections" that allow us to monitor,
+in real-time, statistics of sessions with a certain tag set.
+
+A Selection is a list of tags:
+
+[
+  { name: 'city', value: 'Jakarta' },
+  { name: 'carrier', value: 'Vodafone' }
+]
+
+The selection above means:
+
+Every session S such that
+  S.tags contains a tag T with
+    T.name == 'city' and T.value == 'Jakarta'
+  OR
+  S.tags contains a tag T with
+    T.name == 'carrier' and T.value == 'Vodafone'
+
+So a Selection represents a subset of the list of download sessions -- every
+session whose tags match the selection criteria.
+
+A selection computes aggregate statistics for the sessions whose tags
+match its criteria. Basic averages are fine (average bytes, average
+size, average speed).
+
+
+Interaction
+-----------
+
+The required interactions are demonstrated in demo.mov. Here they
+are in words:
+
+Be able to delete a tag from a session.
+
+Be able to add a tag to a session.
+
+When a tag is added to a session, UI immediately updates the
+statistics for any selections that include the session based on the
+new tag.
+
+When a tag is deleted from a session, UI immediately updates the
+statistics for any selections that included the session based on that
+tag.
+
+When the mouse hovers a selection, its corresponding sessions get
+visually highlighted in some way.
+
+Be able to delete a selection.
+
+Be able to create a new selection. When the new selection is created,
+it immediately updates with statistics, if there are any objects that
+pass its filter.
+
+
+Deliverable
+-----------
+
+A static web app in a zip file would be great. You can use the
+included input_data.js. This is just raw data, feel free to massage it
+however is needed. We tend to build web apps with angular.js, but feel free
+to use your favorite javascript framework to complete this challenge.
+
+
+Rubric
+------
+We’re looking for code organization and reasoning as well as UI layout
+and ease of interaction.
+
+
+Bonus Points
+------------
+
+1. Selections as defined above take the form of a logical disjunction (a=x or b=y).
+   Extend selections to be disjunctions of conjunctions:
+   (a=x and b=y) or (a=z and c=p and d=m) or ...
+
+   1a. Duplicate tag names allowed in conjunctions
+       (a=x and a=y) or (a=m and a=n)
+
+       This involves allowing tagging a session with multiple tags
+       that share a name.
+
+2. Read-only tags. Some sessions might be tagged with Read-only, or
+   "system tags" that cannot be deleted or modified, but can still be
+   selected for like a regular tag.
