@@ -13,6 +13,8 @@ const App = React.createClass({
   removeHover() {
     this.setState({hover: []});
   },
+
+  
   render: function() {
     return (
       <div className="app">

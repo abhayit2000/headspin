@@ -19741,7 +19741,7 @@
 	
 	var React = __webpack_require__(1);
 	var Downloads = __webpack_require__(160);
-	var Selections = __webpack_require__(188);
+	var Selections = __webpack_require__(185);
 	
 	var App = React.createClass({
 	  displayName: "App",
@@ -19754,6 +19754,7 @@
 	  removeHover: function removeHover() {
 	    this.setState({ hover: [] });
 	  },
+	
 	
 	  render: function render() {
 	    return React.createElement(
@@ -19775,9 +19776,9 @@
 	"use strict";
 	
 	var React = __webpack_require__(1);
-	var AppStore = __webpack_require__(184);
-	var AppActions = __webpack_require__(183);
-	var Tags = __webpack_require__(185);
+	var AppStore = __webpack_require__(161);
+	var AppActions = __webpack_require__(181);
+	var Tags = __webpack_require__(183);
 	
 	var Downloads = React.createClass({
 	  displayName: "Downloads",
@@ -19866,7 +19867,126 @@
 	module.exports = Downloads;
 
 /***/ },
-/* 161 */,
+/* 161 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+	
+	var Store = __webpack_require__(162).Store;
+	var Dispatcher = __webpack_require__(178);
+	
+	var AppStore = new Store(Dispatcher);
+	
+	var downloads = {};
+	var selections = [];
+	var selectionCounter = 0;
+	
+	function deleteTag(tag, download) {
+	  downloads.forEach(function (dl) {
+	    if (dl.size === download) {
+	      dl.tags.forEach(function (tg, idx) {
+	        if (tg.name === tag.name) {
+	          dl.tags.splice(idx, 1);
+	        }
+	      });
+	    }
+	  });
+	}
+	
+	function createTag(tag, download) {
+	  downloads.forEach(function (dl) {
+	    if (dl.size === download) {
+	      dl.tags.push(tag);
+	    }
+	  });
+	}
+	
+	function createSelection(queryTags) {
+	  var list = [];
+	  queryTags.forEach(function (queryTag) {
+	    downloads.forEach(function (download) {
+	      download.tags.forEach(function (tag) {
+	        if (tag.name === queryTag.name && tag.value === queryTag.value) {
+	          list.push(download);
+	        }
+	      });
+	    });
+	  });
+	
+	  var length = list.length;
+	  var timeSum = 0;
+	  var dataSum = 0;
+	
+	  list.forEach(function (download) {
+	    timeSum += download.time;
+	    dataSum += download.size;
+	  });
+	
+	  var averageTime = (timeSum / length).toFixed(2);
+	  var averageData = (dataSum / length).toFixed(2);
+	
+	  var selection = { id: selectionCounter, queryTags: queryTags, length: length,
+	    averageData: averageData, averageTime: averageTime,
+	    averageSpeed: (averageData / averageTime).toFixed(2), list: list };
+	
+	  selections.push(selection);
+	  selectionCounter++;
+	}
+	
+	function updateSelections() {
+	  var oldSelections = selections;
+	  selections = [];
+	  oldSelections.forEach(function (selection) {
+	    createSelection(selection.queryTags);
+	  });
+	}
+	
+	function deleteSelection(id) {
+	  selections.forEach(function (selection, idx) {
+	    if (selection.id === id) {
+	      selections.splice(idx, 1);
+	    }
+	  });
+	}
+	
+	AppStore.allDownloads = function () {
+	  return downloads;
+	};
+	
+	AppStore.allSelections = function () {
+	  return selections;
+	};
+	
+	AppStore.__onDispatch = function (payload) {
+	  switch (payload.actionType) {
+	    case "DOWNLOADS_RECEIVED":
+	      downloads = payload.downloads;
+	      AppStore.__emitChange();
+	      break;
+	    case "DELETE_TAG":
+	      deleteTag(payload.tag, payload.download);
+	      updateSelections();
+	      AppStore.__emitChange();
+	      break;
+	    case "CREATE_TAG":
+	      createTag(payload.tag, payload.download);
+	      updateSelections();
+	      AppStore.__emitChange();
+	      break;
+	    case "CREATE_SELECTION":
+	      createSelection(payload.tags);
+	      AppStore.__emitChange();
+	      break;
+	    case "DELETE_SELECTION":
+	      deleteSelection(payload.id);
+	      AppStore.__emitChange();
+	      break;
+	  }
+	};
+	
+	module.exports = AppStore;
+
+/***/ },
 /* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
@@ -26531,47 +26651,7 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 181 */,
-/* 182 */
-/***/ function(module, exports) {
-
-	'use strict';
-	
-	var inputData = {
-	  downloads: [{
-	    size: 100, time: 10, // size = MB, time = seconds
-	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Airtel' }]
-	  }, {
-	    size: 20, time: 25,
-	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Vodafone' }]
-	  }, {
-	    size: 10, time: 30,
-	    tags: [{ name: 'city', value: 'Rio de Janeiro' }, { name: 'carrier', value: 'Vodafone' }]
-	  }, {
-	    size: 200, time: 9,
-	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Verizon' }]
-	  }, {
-	    size: 250, time: 55,
-	    tags: [{ name: 'city', value: 'Jakarta' }, { name: 'carrier', value: 'Vodafone' }]
-	  }, {
-	    size: 78, time: 55,
-	    tags: [{ name: 'city', value: 'Bucharest' }, { name: 'carrier', value: 'Vodafone' }]
-	  }, {
-	    size: 33, time: 18,
-	    tags: [{ name: 'city', value: 'Bucharest' }, { name: 'carrier', value: 'AT&T' }]
-	  }, {
-	    size: 422, time: 55.4,
-	    tags: [{ name: 'city', value: 'San Francisco' }, { name: 'carrier', value: 'AT&T' }]
-	  }, {
-	    size: 89, time: 21.1,
-	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Verizon' }]
-	  }]
-	};
-	
-	module.exports = inputData;
-
-/***/ },
-/* 183 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -26618,123 +26698,52 @@
 	};
 
 /***/ },
-/* 184 */
-/***/ function(module, exports, __webpack_require__) {
+/* 182 */
+/***/ function(module, exports) {
 
 	'use strict';
 	
-	var Store = __webpack_require__(162).Store;
-	var Dispatcher = __webpack_require__(178);
-	
-	var AppStore = new Store(Dispatcher);
-	
-	var downloads = {};
-	var selections = [];
-	var selectionCounter = 0;
-	
-	function deleteTag(tag, download) {
-	  downloads.forEach(function (dl) {
-	    if (dl.size === download) {
-	      dl.tags.forEach(function (tg, idx) {
-	        if (tg.name === tag.name) {
-	          dl.tags.splice(idx, 1);
-	        }
-	      });
-	    }
-	  });
-	}
-	
-	function createTag(tag, download) {
-	  downloads.forEach(function (dl) {
-	    if (dl.size === download) {
-	      dl.tags.push(tag);
-	    }
-	  });
-	}
-	
-	function createSelection(queryTags) {
-	  var list = [];
-	  queryTags.forEach(function (queryTag) {
-	    downloads.forEach(function (download) {
-	      download.tags.forEach(function (tag) {
-	        if (tag.name === queryTag.name && tag.value === queryTag.value) {
-	          list.push(download);
-	        }
-	      });
-	    });
-	  });
-	
-	  var length = list.length;
-	  var timeSum = 0;
-	  var dataSum = 0;
-	
-	  list.forEach(function (download) {
-	    timeSum += download.time;
-	    dataSum += download.size;
-	  });
-	
-	  var averageTime = (timeSum / length).toFixed(2);
-	  var averageData = (dataSum / length).toFixed(2);
-	
-	  var selection = { id: selectionCounter, queryTags: queryTags, length: length,
-	    averageData: averageData, averageTime: averageTime,
-	    averageSpeed: (averageData / averageTime).toFixed(2), list: list };
-	
-	  selections.push(selection);
-	  selectionCounter++;
-	}
-	
-	function deleteSelection(id) {
-	  selections.forEach(function (selection, idx) {
-	    if (selection.id === id) {
-	      selections.splice(idx, 1);
-	    }
-	  });
-	}
-	
-	AppStore.allDownloads = function () {
-	  return downloads;
+	var inputData = {
+	  downloads: [{
+	    size: 100, time: 10, // size = MB, time = seconds
+	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Airtel' }]
+	  }, {
+	    size: 20, time: 25,
+	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Vodafone' }]
+	  }, {
+	    size: 10, time: 30,
+	    tags: [{ name: 'city', value: 'Rio de Janeiro' }, { name: 'carrier', value: 'Vodafone' }]
+	  }, {
+	    size: 200, time: 9,
+	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Verizon' }]
+	  }, {
+	    size: 250, time: 55,
+	    tags: [{ name: 'city', value: 'Jakarta' }, { name: 'carrier', value: 'Vodafone' }]
+	  }, {
+	    size: 78, time: 55,
+	    tags: [{ name: 'city', value: 'Bucharest' }, { name: 'carrier', value: 'Vodafone' }]
+	  }, {
+	    size: 33, time: 18,
+	    tags: [{ name: 'city', value: 'Bucharest' }, { name: 'carrier', value: 'AT&T' }]
+	  }, {
+	    size: 422, time: 55.4,
+	    tags: [{ name: 'city', value: 'San Francisco' }, { name: 'carrier', value: 'AT&T' }]
+	  }, {
+	    size: 89, time: 21.1,
+	    tags: [{ name: 'city', value: 'Bangalore' }, { name: 'carrier', value: 'Verizon' }]
+	  }]
 	};
 	
-	AppStore.allSelections = function () {
-	  return selections;
-	};
-	
-	AppStore.__onDispatch = function (payload) {
-	  switch (payload.actionType) {
-	    case "DOWNLOADS_RECEIVED":
-	      downloads = payload.downloads;
-	      AppStore.__emitChange();
-	      break;
-	    case "DELETE_TAG":
-	      deleteTag(payload.tag, payload.download);
-	      AppStore.__emitChange();
-	      break;
-	    case "CREATE_TAG":
-	      createTag(payload.tag, payload.download);
-	      AppStore.__emitChange();
-	      break;
-	    case "CREATE_SELECTION":
-	      createSelection(payload.tags);
-	      AppStore.__emitChange();
-	      break;
-	    case "DELETE_SELECTION":
-	      deleteSelection(payload.id);
-	      AppStore.__emitChange();
-	      break;
-	  }
-	};
-	
-	module.exports = AppStore;
+	module.exports = inputData;
 
 /***/ },
-/* 185 */
+/* 183 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
 	var React = __webpack_require__(1);
-	var NewTag = __webpack_require__(186);
+	var NewTag = __webpack_require__(184);
 	
 	var Tags = React.createClass({
 	  displayName: "Tags",
@@ -26789,7 +26798,7 @@
 	module.exports = Tags;
 
 /***/ },
-/* 186 */
+/* 184 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
@@ -26837,16 +26846,15 @@
 	module.exports = NewTag;
 
 /***/ },
-/* 187 */,
-/* 188 */
+/* 185 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
 	var React = __webpack_require__(1);
-	var AppStore = __webpack_require__(184);
-	var NewSelection = __webpack_require__(189);
-	var AppActions = __webpack_require__(183);
+	var AppStore = __webpack_require__(161);
+	var NewSelection = __webpack_require__(186);
+	var AppActions = __webpack_require__(181);
 	
 	var Selections = React.createClass({
 	  displayName: "Selections",
@@ -26983,13 +26991,13 @@
 	module.exports = Selections;
 
 /***/ },
-/* 189 */
+/* 186 */
 /***/ function(module, exports, __webpack_require__) {
 
 	"use strict";
 	
 	var React = __webpack_require__(1);
-	var AppActions = __webpack_require__(183);
+	var AppActions = __webpack_require__(181);
 	
 	var NewSelection = React.createClass({
 	  displayName: "NewSelection",
