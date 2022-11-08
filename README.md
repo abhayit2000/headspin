@@ -1,4 +1,4 @@
-# headspin
+# HeadSpin
 
 Hi HeadSpin folk! As directed, I built an interactive UI that allows for tagging objects, and creating 
 selections based on those tags. 
@@ -26,5 +26,5 @@ if this project were to scale, I'd need to make a more complex and time efficien
 
 Other notes:
 
-  1. The space theme was inspired by HeadSpin homepage.
+  1. The space theme was inspired by [HeadSpin](https://www.headspin.io) homepage.
   2. Have a nice day! :)
